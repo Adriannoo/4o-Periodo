@@ -1,5 +1,7 @@
 package br.edu.uniamerica.projeto_4periodo.controller.dto;
 
+// Classe do tipo Record, que e imutavel e serve para apresentar dados de forma simples, sem a necessidade de criar getters e setters
+
 // <T> e um tipo "generic" que quer dizer que o record funciona para qualquer tipo de dado decidido na hora de usar
 public record ApiResponse<T>(
         String mensagem,
