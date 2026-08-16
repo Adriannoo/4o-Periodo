@@ -75,17 +75,23 @@
     </div>
 
     <div class="rodape">
-      <span class="avatar">GM</span>
+      <span class="avatar">{{ initialsUsuario() }}</span>
       <span class="usuario">
-        <span class="usuario-nome">Gustavo M.</span>
-        <span class="usuario-papel">Administrador</span>
+        <span class="usuario-nome">{{ usuario()?.nome ?? 'Usuário' }}</span>
+        <span class="usuario-papel">{{ usuario()?.papel === 'admin' ? 'Administrador' : 'Usuário' }}</span>
       </span>
-      <a class="sair" routerLink="/login" aria-label="Sair do sistema">
+      <button 
+        type="button"
+        class="sair" 
+        (click)="logout()"
+        aria-label="Sair do sistema"
+        title="Sair do sistema"
+      >
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M14 8V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h7a2 2 0 0 0 2-2v-2"/>
           <path d="M9 12h12l-3-3M18 15l3-3"/>
         </svg>
-      </a>
+      </button>
     </div>
   </nav>
 

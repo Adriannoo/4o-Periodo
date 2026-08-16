@@ -109,7 +109,7 @@ export class MovimentacaoForm implements OnInit {
       : this.movimentacaoService.criar(payload as any);
 
     requisicao.subscribe({
-      next: () => this.router.navigate(['/movimentacao']),
+      next: () => this.router.navigate(['/lancamentos']),
       error: () => {
         this.erro.set('Não foi possível salvar. Tente novamente.');
         this.salvando.set(false);

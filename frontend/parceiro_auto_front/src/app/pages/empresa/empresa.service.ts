@@ -1,17 +1,20 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Observable, of, throwError } from 'rxjs';
 import { delay } from 'rxjs/operators';
 import { Empresa } from './empresa.model';
+import { AuthService } from '../../services/auth.service';
 
 @Injectable({ providedIn: 'root' })
 export class EmpresaService {
-  /** v2: o modelo ganhou dados fiscais e endereço completo. */
-  private readonly CHAVE = 'parceiro-auto:empresas:v2';
+  private readonly CHAVE = 'parceiro-auto:empresas:v3';
   private readonly LATENCIA = 300;
+
+  private authService = inject(AuthService);
 
   private readonly SEMENTE: Empresa[] = [
     {
       id: 1,
+      usuariosId: [1, 2],  // Gustavo (admin) e Maria têm acesso
       razaoSocial: 'Auto Peças Iguaçu LTDA',
       nomeFantasia: 'Iguaçu Peças',
       cnpj: '12.345.678/0001-95',
@@ -32,6 +35,7 @@ export class EmpresaService {
     },
     {
       id: 2,
+      usuariosId: [1, 3],  // Gustavo (admin) e João têm acesso
       razaoSocial: 'Marcia Ferreira Confecções',
       nomeFantasia: 'Ateliê Marcia',
       cnpj: '04.252.011/0001-10',
@@ -52,6 +56,7 @@ export class EmpresaService {
     },
     {
       id: 3,
+      usuariosId: [3],  // Só João tem acesso
       razaoSocial: 'Oficina Mecânica Central S/A',
       nomeFantasia: 'Central Motors',
       cnpj: '11.222.333/0001-81',
@@ -96,8 +101,21 @@ export class EmpresaService {
     return empresas.reduce((maior, e) => Math.max(maior, e.id), 0) + 1;
   }
 
+  private getUsuarioLogadoId(): number | null {
+    return this.authService.getUsuarioLogado()?.id ?? null;
+  }
+
+  private podeAcessar(usuariosId: number[]): boolean {
+    const usuarioId = this.getUsuarioLogadoId();
+    if (!usuarioId) return false;
+    return usuariosId.includes(usuarioId);
+  }
+
   listar(): Observable<Empresa[]> {
-    return of(this.ler()).pipe(delay(this.LATENCIA));
+    const todas = this.ler();
+    // Filtrar apenas empresas que o usuário logado tem acesso
+    const filtradas = todas.filter((e) => this.podeAcessar(e.usuariosId));
+    return of(filtradas).pipe(delay(this.LATENCIA));
   }
 
   buscarPorId(id: number): Observable<Empresa> {
@@ -107,12 +125,27 @@ export class EmpresaService {
       return throwError(() => new Error(`Empresa ${id} não encontrada.`));
     }
 
+    // Verificar se o usuário tem acesso
+    if (!this.podeAcessar(empresa.usuariosId)) {
+      return throwError(() => new Error(`Acesso negado à empresa ${id}.`));
+    }
+
     return of(empresa).pipe(delay(this.LATENCIA));
   }
 
-  criar(dados: Omit<Empresa, 'id'>): Observable<Empresa> {
+  criar(dados: Omit<Empresa, 'id' | 'usuariosId'>): Observable<Empresa> {
     const empresas = this.ler();
-    const nova: Empresa = { ...dados, id: this.gerarId(empresas) };
+    const usuarioId = this.getUsuarioLogadoId();
+
+    if (!usuarioId) {
+      return throwError(() => new Error('Usuário não autenticado'));
+    }
+
+    const nova: Empresa = {
+      ...dados,
+      id: this.gerarId(empresas),
+      usuariosId: [usuarioId],  // Adiciona o usuário logado como único acesso
+    };
 
     empresas.push(nova);
     this.gravar(empresas);
@@ -128,6 +161,11 @@ export class EmpresaService {
       return throwError(() => new Error(`Empresa ${empresa.id} não encontrada.`));
     }
 
+    // Verificar se o usuário tem acesso
+    if (!this.podeAcessar(empresas[indice].usuariosId)) {
+      return throwError(() => new Error(`Acesso negado à empresa ${empresa.id}.`));
+    }
+
     empresas[indice] = { ...empresa };
     this.gravar(empresas);
 
@@ -135,15 +173,34 @@ export class EmpresaService {
   }
 
   excluir(id: number): Observable<void> {
-    this.gravar(this.ler().filter((e) => e.id !== id));
+    const empresas = this.ler();
+    const empresa = empresas.find((e) => e.id === id);
+
+    if (!empresa) {
+      return throwError(() => new Error(`Empresa ${id} não encontrada.`));
+    }
+
+    // Verificar se o usuário tem acesso
+    if (!this.podeAcessar(empresa.usuariosId)) {
+      return throwError(() => new Error(`Acesso negado à empresa ${id}.`));
+    }
+
+    this.gravar(empresas.filter((e) => e.id !== id));
 
     return of(void 0).pipe(delay(this.LATENCIA));
   }
 
   cnpjJaCadastrado(cnpj: string, idIgnorado?: number): boolean {
     const limpo = cnpj.replace(/\D/g, '');
+    const usuarioId = this.getUsuarioLogadoId();
+    const todas = this.ler();
 
-    return this.ler().some(
+    // Filtrar apenas empresas que o usuário tem acesso
+    const empresasAcesso = usuarioId
+      ? todas.filter((e) => e.usuariosId.includes(usuarioId))
+      : [];
+
+    return empresasAcesso.some(
       (e) => e.cnpj.replace(/\D/g, '') === limpo && e.id !== idIgnorado,
     );
   }

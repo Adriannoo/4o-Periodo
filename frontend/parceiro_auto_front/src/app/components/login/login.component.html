@@ -5,24 +5,53 @@
       Use o e-mail corporativo e a senha cadastrada para acessar o painel.
     </p>
 
-    <div class="field-group">
-      <label for="email">E-mail</label>
-      <input id="email" type="email" placeholder="nome@empresa.com" />
+    <div *ngIf="erro(); else semErro" class="aviso-erro">
+      <p>{{ erro() }}</p>
+      <button type="button" class="btn-fechar" (click)="limparErro()">✕</button>
     </div>
+    <ng-template #semErro></ng-template>
 
-    <div class="field-group">
-      <label for="password">Senha</label>
-      <input id="password" type="password" placeholder="Sua senha" />
-    </div>
+    <form (ngSubmit)="login()" class="formulario">
+      <div class="field-group">
+        <label for="email">E-mail</label>
+        <input
+          id="email"
+          type="email"
+          placeholder="nome@empresa.com"
+          [(ngModel)]="email"
+          name="email"
+          [disabled]="carregando()"
+        />
+      </div>
 
-    <button type="submit" class="login-btn">Entrar</button>
+      <div class="field-group">
+        <label for="password">Senha</label>
+        <input
+          id="password"
+          type="password"
+          placeholder="Sua senha"
+          [(ngModel)]="senha"
+          name="senha"
+          [disabled]="carregando()"
+        />
+      </div>
 
-    <button type="button" class="register-btn" routerLink="/register">
+      <button type="submit" class="login-btn" [disabled]="carregando()">
+        {{ carregando() ? 'Entrando...' : 'Entrar' }}
+      </button>
+    </form>
+
+    <button type="button" class="register-btn" routerLink="/register" [disabled]="carregando()">
       Cadastrar
     </button>
 
     <p class="help-text">
       Precisa do acesso inicial? Solicite um convite ao administrador da sua empresa.
+    </p>
+
+    <hr style="margin: 20px 0; border: none; border-top: 1px solid #d3d3d3;" />
+    <p style="font-size: 0.85rem; color: #666; text-align: center;">
+      <strong>Demo:</strong> Email: gustavo@empresa.com | Senha: 123456
     </p>
   </section>
 </main>

@@ -16,6 +16,7 @@ import { EmpresaLancamentos } from './pages/empresa/empresa-lancamentos/empresa-
 
 import { MovimentacaoLista } from './pages/movimentacao/movimentacao-lista/movimentacao-lista';
 import { MovimentacaoForm } from './pages/movimentacao/movimentacao-form/movimentacao-form';
+import { AuthGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -25,6 +26,7 @@ export const routes: Routes = [
   {
     path: '',
     component: Layout,
+    canActivate: [AuthGuard],
     children: [
       { path: 'dashboard', component: Dashboard, title: 'Visão geral' },
 
