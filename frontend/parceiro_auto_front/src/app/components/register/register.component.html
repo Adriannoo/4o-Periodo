@@ -1,0 +1,73 @@
+<main class="register-page">
+  <section class="register-card" aria-label="Formulário de register">
+    <h1>Cadastrar</h1>
+    <p class="subtitle">
+      Preencha os campos abaixo para criar sua conta.
+    </p>
+
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      <div class="field-group">
+        <label for="email">E-mail</label>
+        <input id="email" type="email" placeholder="nome@empresa.com" formControlName="email" />
+      </div>
+
+      <div
+        class="error-message"
+        *ngIf="formSubmitted && emailControl?.invalid && emailControl?.hasError('required')"
+      >
+        Informe seu e-mail.
+      </div>
+
+      <div
+        class="error-message"
+        *ngIf="formSubmitted && emailControl?.invalid && emailControl?.hasError('email')"
+      >
+        E-mail inválido. Use um formato válido.
+      </div>
+
+      <div class="field-group">
+        <label for="password">Senha</label>
+        <input id="password" type="password" placeholder="Sua senha" formControlName="password" />
+      </div>
+
+      <div
+        class="error-message"
+        *ngIf="formSubmitted && passwordControl?.invalid && passwordControl?.hasError('required')"
+      >
+        Informe sua senha.
+      </div>
+
+      <div
+        class="error-message"
+        *ngIf="formSubmitted && passwordControl?.invalid && passwordControl?.hasError('minlength')"
+      >
+        Sua senha deve ter no mínimo 6 caracteres.
+      </div>
+
+      <div class="field-group">
+        <label for="confirmPassword">Confirme sua senha</label>
+        <input id="confirmPassword" type="password" placeholder="Confirme sua senha" formControlName="confirmPassword" />
+      </div>
+
+      <div
+        class="error-message"
+        *ngIf="formSubmitted && confirmPasswordControl?.invalid && confirmPasswordControl?.hasError('required')"
+      >
+        Confirme sua senha.
+      </div>
+
+      <div
+        class="error-message"
+        *ngIf="formSubmitted && form.hasError('passwordsNotMatch')"
+      >
+        As senhas não coincidem.
+      </div>
+
+      <button type="submit" class="register-btn">Cadastrar</button>
+
+      <button type="button" class="back-btn" routerLink="/login">
+        Voltar para o login
+      </button>
+    </form>
+  </section>
+</main>
