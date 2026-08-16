@@ -5,8 +5,8 @@ import { Empresa } from './empresa.model';
 
 @Injectable({ providedIn: 'root' })
 export class EmpresaService {
-  private readonly CHAVE = 'parceiro-auto:empresas';
-
+  /** v2: o modelo ganhou dados fiscais e endereço completo. */
+  private readonly CHAVE = 'parceiro-auto:empresas:v2';
   private readonly LATENCIA = 300;
 
   private readonly SEMENTE: Empresa[] = [
@@ -15,21 +15,59 @@ export class EmpresaService {
       razaoSocial: 'Auto Peças Iguaçu LTDA',
       nomeFantasia: 'Iguaçu Peças',
       cnpj: '12.345.678/0001-95',
-      telefone: '(45) 3521-1000',
-      email: 'contato@iguacupecas.com.br',
+      inscricaoEstadual: '9012345678',
+      naturezaJuridica: 'LTDA',
+      regime: 'SIMPLES_NACIONAL',
+      porte: 'EPP',
+      cep: '85851-000',
+      logradouro: 'Avenida Brasil',
+      numero: '1420',
+      complemento: 'Galpão 2',
+      bairro: 'Centro',
       cidade: 'Foz do Iguaçu',
       uf: 'PR',
+      telefone: '(45) 3521-1000',
+      email: 'contato@iguacupecas.com.br',
       ativa: true,
     },
     {
       id: 2,
+      razaoSocial: 'Marcia Ferreira Confecções',
+      nomeFantasia: 'Ateliê Marcia',
+      cnpj: '04.252.011/0001-10',
+      inscricaoEstadual: 'ISENTO',
+      naturezaJuridica: 'EI',
+      regime: 'MEI',
+      porte: 'MEI',
+      cep: '89201-100',
+      logradouro: 'Rua Blumenau',
+      numero: '210',
+      complemento: 'Sala 3',
+      bairro: 'Atiradores',
+      cidade: 'Joinville',
+      uf: 'SC',
+      telefone: '(47) 99812-4477',
+      email: 'marcia@atelie.com.br',
+      ativa: true,
+    },
+    {
+      id: 3,
       razaoSocial: 'Oficina Mecânica Central S/A',
       nomeFantasia: 'Central Motors',
       cnpj: '11.222.333/0001-81',
-      telefone: '(41) 3030-2200',
-      email: 'sac@centralmotors.com.br',
+      inscricaoEstadual: '9087654321',
+      naturezaJuridica: 'SA',
+      regime: 'LUCRO_PRESUMIDO',
+      porte: 'DEMAIS',
+      cep: '80010-010',
+      logradouro: 'Rua XV de Novembro',
+      numero: '870',
+      complemento: '',
+      bairro: 'Centro',
       cidade: 'Curitiba',
       uf: 'PR',
+      telefone: '(41) 3030-2200',
+      email: 'sac@centralmotors.com.br',
       ativa: false,
     },
   ];
