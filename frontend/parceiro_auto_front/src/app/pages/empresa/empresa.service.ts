@@ -5,7 +5,11 @@ import { Empresa } from './empresa.model';
 
 @Injectable({ providedIn: 'root' })
 export class EmpresaService {
-  private empresas: Empresa[] = [
+  private readonly CHAVE = 'parceiro-auto:empresas';
+
+  private readonly LATENCIA = 300;
+
+  private readonly SEMENTE: Empresa[] = [
     {
       id: 1,
       razaoSocial: 'Auto Peças Iguaçu LTDA',
@@ -30,45 +34,70 @@ export class EmpresaService {
     },
   ];
 
-  private proximoId = 3;
+  constructor() {
+    if (localStorage.getItem(this.CHAVE) === null) {
+      this.gravar(this.SEMENTE);
+    }
+  }
 
-  private readonly LATENCIA = 300;
+  private ler(): Empresa[] {
+    try {
+      const bruto = localStorage.getItem(this.CHAVE);
+      return bruto ? (JSON.parse(bruto) as Empresa[]) : [];
+    } catch {
+      this.gravar(this.SEMENTE);
+      return [...this.SEMENTE];
+    }
+  }
+
+  private gravar(empresas: Empresa[]): void {
+    localStorage.setItem(this.CHAVE, JSON.stringify(empresas));
+  }
+
+  private gerarId(empresas: Empresa[]): number {
+    return empresas.reduce((maior, e) => Math.max(maior, e.id), 0) + 1;
+  }
 
   listar(): Observable<Empresa[]> {
-    return of(this.empresas.map((e) => ({ ...e }))).pipe(delay(this.LATENCIA));
+    return of(this.ler()).pipe(delay(this.LATENCIA));
   }
 
   buscarPorId(id: number): Observable<Empresa> {
-    const empresa = this.empresas.find((e) => e.id === id);
+    const empresa = this.ler().find((e) => e.id === id);
 
     if (!empresa) {
       return throwError(() => new Error(`Empresa ${id} não encontrada.`));
     }
 
-    return of({ ...empresa }).pipe(delay(this.LATENCIA));
+    return of(empresa).pipe(delay(this.LATENCIA));
   }
 
   criar(dados: Omit<Empresa, 'id'>): Observable<Empresa> {
-    const nova: Empresa = { ...dados, id: this.proximoId++ };
-    this.empresas.push(nova);
+    const empresas = this.ler();
+    const nova: Empresa = { ...dados, id: this.gerarId(empresas) };
 
-    return of({ ...nova }).pipe(delay(this.LATENCIA));
+    empresas.push(nova);
+    this.gravar(empresas);
+
+    return of(nova).pipe(delay(this.LATENCIA));
   }
 
   atualizar(empresa: Empresa): Observable<Empresa> {
-    const indice = this.empresas.findIndex((e) => e.id === empresa.id);
+    const empresas = this.ler();
+    const indice = empresas.findIndex((e) => e.id === empresa.id);
 
     if (indice === -1) {
       return throwError(() => new Error(`Empresa ${empresa.id} não encontrada.`));
     }
 
-    this.empresas[indice] = { ...empresa };
+    empresas[indice] = { ...empresa };
+    this.gravar(empresas);
 
-    return of({ ...empresa }).pipe(delay(this.LATENCIA));
+    return of(empresa).pipe(delay(this.LATENCIA));
   }
 
   excluir(id: number): Observable<void> {
-    this.empresas = this.empresas.filter((e) => e.id !== id);
+    this.gravar(this.ler().filter((e) => e.id !== id));
 
     return of(void 0).pipe(delay(this.LATENCIA));
   }
@@ -76,8 +105,12 @@ export class EmpresaService {
   cnpjJaCadastrado(cnpj: string, idIgnorado?: number): boolean {
     const limpo = cnpj.replace(/\D/g, '');
 
-    return this.empresas.some(
+    return this.ler().some(
       (e) => e.cnpj.replace(/\D/g, '') === limpo && e.id !== idIgnorado,
     );
+  }
+
+  restaurarExemplos(): void {
+    this.gravar(this.SEMENTE);
   }
 }
