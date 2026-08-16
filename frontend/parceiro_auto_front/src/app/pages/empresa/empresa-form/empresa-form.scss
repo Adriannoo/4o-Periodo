@@ -1,0 +1,17 @@
+.card {
+  border: none;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.form-label {
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: #4a4a4a;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: #1e73d8;
+  box-shadow: 0 0 0 0.2rem rgba(30, 115, 216, 0.15);
+}
