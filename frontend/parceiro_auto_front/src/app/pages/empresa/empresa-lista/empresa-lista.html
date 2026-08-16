@@ -1,47 +1,40 @@
-<div class="d-flex flex-wrap gap-2 justify-content-between align-items-center mb-3">
+<div class="topo">
   <div>
-    <h2 class="mb-1">Empresas</h2>
+    <h2 class="mb-1">Minhas empresas</h2>
     <small class="text-muted">
-      {{ totalAtivas() }} ativas · {{ totalInativas() }} inativas
+      {{ empresas().length }} {{ empresas().length === 1 ? 'empresa' : 'empresas' }} ·
+      {{ totalAtivas() }} em operação
     </small>
   </div>
 
   <a routerLink="nova" class="btn btn-primary text-nowrap">Nova empresa</a>
 </div>
 
-<div class="d-flex flex-wrap gap-2 align-items-center mb-3">
+<div class="filtros">
   <input
     type="search"
     class="form-control busca"
-    placeholder="Buscar por nome ou CNPJ"
+    placeholder="Buscar por razão social, fantasia ou CNPJ"
     [ngModel]="termoBusca()"
     (ngModelChange)="termoBusca.set($event)" />
 
+  <select class="form-select seletor" [ngModel]="regime()" (ngModelChange)="regime.set($event)">
+    <option value="todos">Todos os regimes</option>
+    @for (r of regimes; track r.valor) {
+      <option [value]="r.valor">{{ r.rotulo }}</option>
+    }
+  </select>
+
   <div class="btn-group" role="group" aria-label="Filtrar por situação">
-    <button
-      type="button"
-      class="btn btn-outline-secondary"
-      [class.active]="situacao() === 'todas'"
-      (click)="situacao.set('todas')">
-      Todas
-    </button>
-    <button
-      type="button"
-      class="btn btn-outline-secondary"
-      [class.active]="situacao() === 'ativas'"
-      (click)="situacao.set('ativas')">
-      Ativas
-    </button>
-    <button
-      type="button"
-      class="btn btn-outline-secondary"
-      [class.active]="situacao() === 'inativas'"
-      (click)="situacao.set('inativas')">
-      Inativas
-    </button>
+    <button type="button" class="btn btn-outline-secondary"
+      [class.active]="situacao() === 'todas'" (click)="situacao.set('todas')">Todas</button>
+    <button type="button" class="btn btn-outline-secondary"
+      [class.active]="situacao() === 'ativas'" (click)="situacao.set('ativas')">Ativas</button>
+    <button type="button" class="btn btn-outline-secondary"
+      [class.active]="situacao() === 'inativas'" (click)="situacao.set('inativas')">Inativas</button>
   </div>
 
-  @if (termoBusca() || situacao() !== 'todas') {
+  @if (temFiltro()) {
     <button type="button" class="btn btn-link" (click)="limparFiltros()">Limpar filtros</button>
   }
 </div>
@@ -54,7 +47,7 @@
           <span class="visually-hidden">Carregando</span>
         </div>
       </div>
-    } @else if (empresasFiltradas().length === 0) {
+    } @else if (filtradas().length === 0) {
       <div class="text-center py-5 px-3">
         <p class="text-muted mb-3">
           {{ empresas().length === 0
@@ -63,7 +56,7 @@
         </p>
 
         @if (empresas().length === 0) {
-          <a routerLink="nova" class="btn btn-primary">Cadastrar empresa</a>
+          <a routerLink="nova" class="btn btn-primary">Cadastrar primeira empresa</a>
         } @else {
           <button type="button" class="btn btn-outline-secondary" (click)="limparFiltros()">
             Limpar filtros
@@ -76,42 +69,49 @@
           <thead class="table-light">
             <tr>
               <th class="ordenavel" (click)="ordenarPor('razaoSocial')">
-                Razão social <span class="seta">{{ seta('razaoSocial') }}</span>
-              </th>
-              <th class="ordenavel" (click)="ordenarPor('nomeFantasia')">
-                Nome fantasia <span class="seta">{{ seta('nomeFantasia') }}</span>
+                Empresa <span class="seta">{{ seta('razaoSocial') }}</span>
               </th>
               <th class="ordenavel" (click)="ordenarPor('cnpj')">
                 CNPJ <span class="seta">{{ seta('cnpj') }}</span>
               </th>
+              <th class="ordenavel" (click)="ordenarPor('regime')">
+                Regime <span class="seta">{{ seta('regime') }}</span>
+              </th>
+              <th class="ordenavel" (click)="ordenarPor('porte')">
+                Porte <span class="seta">{{ seta('porte') }}</span>
+              </th>
               <th class="ordenavel" (click)="ordenarPor('cidade')">
                 Cidade/UF <span class="seta">{{ seta('cidade') }}</span>
               </th>
-              <th class="ordenavel" (click)="ordenarPor('ativa')">
-                Situação <span class="seta">{{ seta('ativa') }}</span>
-              </th>
+              <th>Situação</th>
               <th class="text-end">Ações</th>
             </tr>
           </thead>
           <tbody>
-            @for (empresa of empresasFiltradas(); track empresa.id) {
+            @for (empresa of filtradas(); track empresa.id) {
               <tr>
-                <td>{{ empresa.razaoSocial }}</td>
-                <td>{{ empresa.nomeFantasia }}</td>
-                <td>{{ empresa.cnpj }}</td>
+                <td>
+                  <span class="empresa-nome">{{ empresa.nomeFantasia }}</span>
+                  <small class="empresa-razao">{{ empresa.razaoSocial }}</small>
+                </td>
+                <td class="text-nowrap">{{ empresa.cnpj }}</td>
+                <td><span class="tag">{{ regimeLegivel(empresa) }}</span></td>
+                <td>{{ porteLegivel(empresa) }}</td>
                 <td>{{ empresa.cidade }}/{{ empresa.uf }}</td>
                 <td>
-                  <span class="badge" [class]="empresa.ativa ? 'text-bg-success' : 'text-bg-secondary'">
+                  <span class="pastilha" [class.off]="!empresa.ativa">
                     {{ empresa.ativa ? 'Ativa' : 'Inativa' }}
                   </span>
                 </td>
                 <td class="text-end text-nowrap">
+                  <a [routerLink]="[empresa.id, 'lancamentos']" class="btn btn-sm btn-outline-secondary me-1">
+                    Lançamentos
+                  </a>
                   <a [routerLink]="[empresa.id, 'editar']" class="btn btn-sm btn-outline-primary me-1">
                     Editar
                   </a>
-                  <button type="button" class="btn btn-sm btn-outline-danger" (click)="abrirConfirmacao(empresa)">
-                    Excluir
-                  </button>
+                  <button type="button" class="btn btn-sm btn-outline-danger"
+                    (click)="abrirConfirmacao(empresa)">Excluir</button>
                 </td>
               </tr>
             }
@@ -130,13 +130,12 @@
           <h5 class="modal-title">Excluir empresa</h5>
           <button type="button" class="btn-close" (click)="fecharConfirmacao()"></button>
         </div>
-
         <div class="modal-body">
           <p class="mb-0">
-            Excluir <strong>{{ empresa.razaoSocial }}</strong>? Essa ação não pode ser desfeita.
+            Excluir <strong>{{ empresa.razaoSocial }}</strong>? Os lançamentos vinculados
+            ficarão sem empresa. Essa ação não pode ser desfeita.
           </p>
         </div>
-
         <div class="modal-footer">
           <button type="button" class="btn btn-light" (click)="fecharConfirmacao()">Cancelar</button>
           <button type="button" class="btn btn-danger" (click)="confirmarExclusao()">Excluir</button>

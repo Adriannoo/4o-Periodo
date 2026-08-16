@@ -2,11 +2,16 @@ import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { EmpresaService } from '../empresa.service';
-import { Empresa } from '../empresa.model';
+import {
+  Empresa,
+  REGIMES,
+  RegimeTributario,
+  rotuloPorte,
+  rotuloRegime,
+} from '../empresa.model';
 
-type Coluna = 'razaoSocial' | 'nomeFantasia' | 'cnpj' | 'cidade' | 'ativa';
+type Coluna = 'razaoSocial' | 'cnpj' | 'regime' | 'porte' | 'cidade';
 type Direcao = 'asc' | 'desc';
-type FiltroSituacao = 'todas' | 'ativas' | 'inativas';
 
 @Component({
   selector: 'app-empresa-lista',
@@ -17,52 +22,46 @@ type FiltroSituacao = 'todas' | 'ativas' | 'inativas';
 export class EmpresaLista implements OnInit {
   private empresaService = inject(EmpresaService);
 
+  regimes = REGIMES;
+
   empresas = signal<Empresa[]>([]);
   carregando = signal(false);
+
   termoBusca = signal('');
-  situacao = signal<FiltroSituacao>('todas');
+  regime = signal<RegimeTributario | 'todos'>('todos');
+  situacao = signal<'todas' | 'ativas' | 'inativas'>('todas');
 
   colunaOrdenada = signal<Coluna>('razaoSocial');
   direcao = signal<Direcao>('asc');
 
   empresaParaExcluir = signal<Empresa | null>(null);
 
-  empresasFiltradas = computed(() => {
+  filtradas = computed(() => {
     const termo = this.termoBusca().trim().toLowerCase();
-    const filtro = this.situacao();
+    const filtroRegime = this.regime();
+    const filtroSituacao = this.situacao();
     const coluna = this.colunaOrdenada();
     const sentido = this.direcao() === 'asc' ? 1 : -1;
 
-    let lista = this.empresas();
-
-    if (filtro !== 'todas') {
-      const querAtivas = filtro === 'ativas';
-      lista = lista.filter((e) => e.ativa === querAtivas);
-    }
-
-    if (termo) {
-      lista = lista.filter(
+    const lista = this.empresas()
+      .filter((e) => filtroRegime === 'todos' || e.regime === filtroRegime)
+      .filter((e) =>
+        filtroSituacao === 'todas' ? true : e.ativa === (filtroSituacao === 'ativas'),
+      )
+      .filter(
         (e) =>
+          !termo ||
           e.razaoSocial.toLowerCase().includes(termo) ||
           e.nomeFantasia.toLowerCase().includes(termo) ||
           e.cnpj.includes(termo),
       );
-    }
 
-    return [...lista].sort((a, b) => {
-      const valorA = a[coluna];
-      const valorB = b[coluna];
-
-      if (typeof valorA === 'boolean' && typeof valorB === 'boolean') {
-        return (Number(valorA) - Number(valorB)) * sentido;
-      }
-
-      return String(valorA).localeCompare(String(valorB), 'pt-BR') * sentido;
-    });
+    return [...lista].sort(
+      (a, b) => String(a[coluna]).localeCompare(String(b[coluna]), 'pt-BR') * sentido,
+    );
   });
 
   totalAtivas = computed(() => this.empresas().filter((e) => e.ativa).length);
-  totalInativas = computed(() => this.empresas().length - this.totalAtivas());
 
   ngOnInit(): void {
     this.carregar();
@@ -98,8 +97,21 @@ export class EmpresaLista implements OnInit {
     return this.direcao() === 'asc' ? '▲' : '▼';
   }
 
+  regimeLegivel(e: Empresa): string {
+    return rotuloRegime(e.regime);
+  }
+
+  porteLegivel(e: Empresa): string {
+    return rotuloPorte(e.porte);
+  }
+
+  temFiltro(): boolean {
+    return this.termoBusca() !== '' || this.regime() !== 'todos' || this.situacao() !== 'todas';
+  }
+
   limparFiltros(): void {
     this.termoBusca.set('');
+    this.regime.set('todos');
     this.situacao.set('todas');
   }
 

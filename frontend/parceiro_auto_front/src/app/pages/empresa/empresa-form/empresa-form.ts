@@ -2,8 +2,13 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { EmpresaService } from '../empresa.service';
-import { UFS } from '../empresa.model';
-import { cnpjValidator, formatarCnpj, formatarTelefone } from '../cnpj.validator';
+import { NATUREZAS, PORTES, REGIMES, UFS } from '../empresa.model';
+import {
+  cnpjValidator,
+  formatarCep,
+  formatarCnpj,
+  formatarTelefone,
+} from '../documentos.validator';
 
 @Component({
   selector: 'app-empresa-form',
@@ -17,7 +22,11 @@ export class EmpresaForm implements OnInit {
   private router = inject(Router);
   private rota = inject(ActivatedRoute);
 
+  regimes = REGIMES;
+  portes = PORTES;
+  naturezas = NATUREZAS;
   ufs = UFS;
+
   empresaId = signal<number | null>(null);
   salvando = signal(false);
   erro = signal<string | null>(null);
@@ -26,10 +35,23 @@ export class EmpresaForm implements OnInit {
     razaoSocial: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(120)]],
     nomeFantasia: ['', [Validators.required, Validators.maxLength(80)]],
     cnpj: ['', [Validators.required, cnpjValidator]],
-    telefone: ['', [Validators.required, Validators.pattern(/^\(\d{2}\)\s\d{4,5}-\d{4}$/)]],
-    email: ['', [Validators.required, Validators.email]],
+    inscricaoEstadual: ['', [Validators.maxLength(20)]],
+
+    naturezaJuridica: ['LTDA', [Validators.required]],
+    regime: ['SIMPLES_NACIONAL', [Validators.required]],
+    porte: ['ME', [Validators.required]],
+
+    cep: ['', [Validators.required, Validators.pattern(/^\d{5}-\d{3}$/)]],
+    logradouro: ['', [Validators.required]],
+    numero: ['', [Validators.required]],
+    complemento: [''],
+    bairro: ['', [Validators.required]],
     cidade: ['', [Validators.required]],
     uf: ['', [Validators.required]],
+
+    telefone: ['', [Validators.required, Validators.pattern(/^\(\d{2}\)\s\d{4,5}-\d{4}$/)]],
+    email: ['', [Validators.required, Validators.email]],
+
     ativa: [true],
   });
 
@@ -42,11 +64,11 @@ export class EmpresaForm implements OnInit {
 
     if (id) {
       this.empresaId.set(Number(id));
-      this.carregarEmpresa(Number(id));
+      this.carregar(Number(id));
     }
   }
 
-  private carregarEmpresa(id: number): void {
+  private carregar(id: number): void {
     this.empresaService.buscarPorId(id).subscribe({
       next: (empresa) => this.formulario.patchValue(empresa),
       error: () => {
@@ -54,6 +76,13 @@ export class EmpresaForm implements OnInit {
         this.formulario.disable();
       },
     });
+  }
+
+  /** MEI é regime e porte ao mesmo tempo: escolher um define o outro. */
+  aoTrocarRegime(): void {
+    if (this.formulario.controls.regime.value === 'MEI') {
+      this.formulario.controls.porte.setValue('MEI');
+    }
   }
 
   aoDigitarCnpj(evento: Event): void {
@@ -64,6 +93,11 @@ export class EmpresaForm implements OnInit {
   aoDigitarTelefone(evento: Event): void {
     const input = evento.target as HTMLInputElement;
     this.formulario.controls.telefone.setValue(formatarTelefone(input.value));
+  }
+
+  aoDigitarCep(evento: Event): void {
+    const input = evento.target as HTMLInputElement;
+    this.formulario.controls.cep.setValue(formatarCep(input.value));
   }
 
   invalido(campo: string): boolean {
@@ -80,6 +114,7 @@ export class EmpresaForm implements OnInit {
 
     if (this.formulario.invalid) {
       this.formulario.markAllAsTouched();
+      this.erro.set('Existem campos obrigatórios pendentes. Revise as seções destacadas.');
       return;
     }
 
@@ -98,7 +133,7 @@ export class EmpresaForm implements OnInit {
       : this.empresaService.criar(dados as any);
 
     requisicao.subscribe({
-      next: () => this.router.navigate(['/empresa']),
+      next: () => this.router.navigate(['/empresas']),
       error: () => {
         this.erro.set('Não foi possível salvar. Tente novamente.');
         this.salvando.set(false);
@@ -107,7 +142,12 @@ export class EmpresaForm implements OnInit {
   }
 
   limpar(): void {
-    this.formulario.reset({ ativa: true });
+    this.formulario.reset({
+      naturezaJuridica: 'LTDA',
+      regime: 'SIMPLES_NACIONAL',
+      porte: 'ME',
+      ativa: true,
+    });
     this.erro.set(null);
   }
 }
