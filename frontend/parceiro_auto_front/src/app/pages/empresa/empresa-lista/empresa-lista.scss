@@ -1,0 +1,19 @@
+.card {
+  border: none;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.table > :not(caption) > * > * {
+  padding: 14px 16px;
+}
+
+thead th {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #4a4a4a;
+}
+
+input[type='search'] {
+  min-width: 260px;
+}
