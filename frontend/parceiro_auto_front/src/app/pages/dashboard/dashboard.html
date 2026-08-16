@@ -1,42 +1,144 @@
-<h2 class="mb-4">Dashboard</h2>
+<header class="cabecalho">
+  <div>
+    <h1>Visão geral</h1>
+    <p class="data">{{ hoje }}</p>
+  </div>
 
-<div class="row g-3 mb-3">
-  <div class="col-md-4">
-    <div class="card">
-      <div class="card-body">
-        <h5 class="card-title">Card 1</h5>
-      </div>
-    </div>
-  </div>
-  <div class="col-md-4">
-    <div class="card">
-      <div class="card-body">
-        <h5 class="card-title">Card 2</h5>
-      </div>
-    </div>
-  </div>
-  <div class="col-md-4">
-    <div class="card">
-      <div class="card-body">
-        <h5 class="card-title">Card 3</h5>
-      </div>
-    </div>
-  </div>
-</div>
+  <div class="acoes">
+    <select class="form-select seletor" [ngModel]="empresaId()"
+      (ngModelChange)="empresaId.set($event)">
+      <option value="todas">Todas as empresas</option>
+      @for (empresa of empresas(); track empresa.id) {
+        <option [ngValue]="empresa.id">{{ empresa.nomeFantasia }}</option>
+      }
+    </select>
 
-<div class="row g-3">
-  <div class="col-md-6">
-    <div class="card" style="height: 250px;">
-      <div class="card-body">
-        <h5 class="card-title">Card grande 1</h5>
-      </div>
+    <a routerLink="/lancamentos/novo" class="btn btn-primary text-nowrap">Novo lançamento</a>
+  </div>
+</header>
+
+@if (carregando()) {
+  <div class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Carregando</span>
     </div>
   </div>
-  <div class="col-md-6">
-    <div class="card" style="height: 250px;">
-      <div class="card-body">
-        <h5 class="card-title">Card grande 2</h5>
-      </div>
-    </div>
+} @else if (empresas().length === 0) {
+  <div class="vazio">
+    <h2>Comece cadastrando uma empresa</h2>
+    <p>Os indicadores aparecem aqui assim que houver lançamentos registrados.</p>
+    <a routerLink="/empresas/nova" class="btn btn-primary">Cadastrar empresa</a>
   </div>
-</div>
+} @else {
+
+  <section class="metricas">
+    <div class="metrica">
+      <span class="metrica-rotulo">Receita do mês</span>
+      <strong class="metrica-valor entrada">{{ moeda(receitaMes()) }}</strong>
+      <span class="metrica-nota">{{ doMes().length }} lançamentos no período</span>
+    </div>
+
+    <div class="metrica">
+      <span class="metrica-rotulo">Despesa do mês</span>
+      <strong class="metrica-valor saida">{{ moeda(despesaMes()) }}</strong>
+      <span class="metrica-nota">saídas registradas</span>
+    </div>
+
+    <div class="metrica destaque">
+      <span class="metrica-rotulo">Resultado do mês</span>
+      <strong class="metrica-valor" [class.saida]="resultadoMes() < 0">
+        {{ moeda(resultadoMes()) }}
+      </strong>
+      <span class="metrica-nota">
+        {{ resultadoMes() >= 0 ? 'receita acima das despesas' : 'despesas acima da receita' }}
+      </span>
+    </div>
+
+    <div class="metrica">
+      <span class="metrica-rotulo">Saldo acumulado</span>
+      <strong class="metrica-valor" [class.saida]="saldoAcumulado() < 0">
+        {{ moeda(saldoAcumulado()) }}
+      </strong>
+      <span class="metrica-nota">desde o primeiro lançamento</span>
+    </div>
+  </section>
+
+  <section class="colunas">
+    <article class="painel">
+      <div class="painel-topo">
+        <h2>Entradas e saídas</h2>
+        <span class="legenda-inline">
+          <span class="ponto entrada"></span>Entradas
+          <span class="ponto saida"></span>Saídas
+        </span>
+      </div>
+
+      <div class="grafico">
+        @for (mes of evolucao(); track mes.rotulo) {
+          <div class="coluna-mes">
+            <div class="barras" [attr.aria-label]="mes.rotulo + ': entradas ' + moeda(mes.entradas) + ', saídas ' + moeda(mes.saidas)">
+              <span class="barra entrada" [style.height.%]="mes.alturaEntrada"></span>
+              <span class="barra saida" [style.height.%]="mes.alturaSaida"></span>
+            </div>
+            <span class="mes-rotulo">{{ mes.rotulo }}</span>
+          </div>
+        }
+      </div>
+
+      <p class="rodape-nota">Últimos seis meses. Barras proporcionais ao maior valor do período.</p>
+    </article>
+
+    <article class="painel">
+      <h2>Onde o dinheiro saiu neste mês</h2>
+
+      @if (despesasPorCategoria().length === 0) {
+        <p class="text-muted vazio-inline">Nenhuma despesa registrada no mês.</p>
+      } @else {
+        <ul class="ranking">
+          @for (fatia of despesasPorCategoria(); track fatia.rotulo) {
+            <li>
+              <div class="ranking-linha">
+                <span>{{ fatia.rotulo }}</span>
+                <strong>{{ moeda(fatia.total) }}</strong>
+              </div>
+              <span class="ranking-trilho">
+                <span class="ranking-barra" [style.width.%]="fatia.percentual"></span>
+              </span>
+            </li>
+          }
+        </ul>
+      }
+
+      <h2 class="mt">Ticket médio de entrada</h2>
+      <p class="ticket">{{ moeda(ticketMedio()) }}</p>
+      <p class="rodape-nota">Média por lançamento de entrada no mês corrente.</p>
+    </article>
+  </section>
+
+  <section class="painel">
+    <div class="painel-topo">
+      <h2>Lançamentos recentes</h2>
+      <a routerLink="/lancamentos" class="link">Ver todos</a>
+    </div>
+
+    @if (recentes().length === 0) {
+      <p class="text-muted vazio-inline">Nenhum lançamento registrado ainda.</p>
+    } @else {
+      <ul class="recentes">
+        @for (m of recentes(); track m.id) {
+          <li>
+            <span class="data-pill">{{ data(m.data) }}</span>
+            <span class="recente-info">
+              <span class="recente-descricao">{{ m.descricao }}</span>
+              <small>{{ nomeEmpresa(m.empresaId) }} · {{ m.categoria }}</small>
+            </span>
+            <span class="recente-valor" [class.entrada]="m.tipo === 'ENTRADA'"
+              [class.saida]="m.tipo === 'SAIDA'">
+              {{ m.tipo === 'ENTRADA' ? '+' : '−' }} {{ moeda(m.valor) }}
+            </span>
+          </li>
+        }
+      </ul>
+    }
+  </section>
+}
