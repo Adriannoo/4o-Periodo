@@ -10,6 +10,7 @@ export type NaturezaJuridica = 'EI' | 'SLU' | 'LTDA' | 'SA' | 'SS';
 
 export interface Empresa {
   id: number;
+  usuariosId: number[];  // Usuários com acesso a esta empresa
 
   razaoSocial: string;
   nomeFantasia: string;
