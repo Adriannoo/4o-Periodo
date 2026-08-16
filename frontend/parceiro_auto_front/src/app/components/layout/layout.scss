@@ -1,0 +1,41 @@
+.sidebar {
+  background-color: #1e73d8;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.titulo-projeto {
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.conteudo {
+  background-color: #f4f4f4;
+  min-height: 100vh;
+}
+
+.menu-card {
+  background-color: rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  margin: 0 12px;
+}
+
+.nav-link {
+  color: #ffffff;
+  font-weight: 500;
+  font-size: 0.95rem;
+  border-radius: 6px;
+  padding: 10px 14px;
+  margin-bottom: 4px;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+  }
+}
+
+.active-link {
+  background-color: rgba(255, 255, 255, 0.25);
+  font-weight: 600;
+}
