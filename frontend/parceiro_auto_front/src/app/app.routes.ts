@@ -6,7 +6,6 @@ import { Layout } from './components/layout/layout';
 
 import { Dashboard } from './pages/dashboard/dashboard';
 import { Conta } from './pages/conta/conta';
-import { FluxoCaixa } from './pages/fluxo-caixa/fluxo-caixa';
 import { Relatorios } from './pages/relatorios/relatorios';
 import { GestaoAcessos } from './pages/gestao-acessos/gestao-acessos';
 
@@ -52,7 +51,6 @@ export const routes: Routes = [
       },
 
       { path: 'conta', component: Conta },
-      { path: 'fluxo-caixa', component: FluxoCaixa },
       { path: 'relatorios', component: Relatorios },
       { path: 'gestao-acessos', component: GestaoAcessos },
     ],

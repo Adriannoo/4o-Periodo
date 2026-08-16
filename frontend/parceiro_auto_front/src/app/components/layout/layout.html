@@ -1,14 +1,7 @@
 <div class="app-shell">
   <nav class="sidebar">
-    <div class="marca">
-      <span class="marca-icone">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="4" y="3" width="16" height="18" rx="2"/>
-          <path d="M8 7h8"/>
-          <path d="M8 11h.01M12 11h.01M16 11h.01M8 15h.01M12 15h.01M16 15v3"/>
-        </svg>
-      </span>
-      <span class="marca-nome">ParceiroAuto</span>
+    <div class="logo">
+      <img src="assets/parceiro-auto-logo-horizontal.svg" alt="Logo da empresa" />
     </div>
 
     <div class="menu">
@@ -31,13 +24,15 @@
         Empresas
       </a>
 
-      <a class="item" routerLink="/conta" routerLinkActive="ativo">
+      <!-- Depois so tirar o "desabilitado" e colocar o routerLink="/conta" routerLinkActive="ativo" no item abaixo, quando a rota estiver pronta -->
+      <a class="item desabilitado">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M3 21h18M3 10h18M5 6l7-3 7 3v4H5z"/>
           <path d="M6 10v11M10 10v11M14 10v11M18 10v11"/>
         </svg>
-        Contas
+        Contas (Em breve)
       </a>
+
 
       <p class="grupo">Financeiro</p>
 
@@ -45,32 +40,26 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M7 10h14l-4-4M17 14H3l4 4"/>
         </svg>
-        Lançamentos
-      </a>
-
-      <a class="item" routerLink="/fluxo-caixa" routerLinkActive="ativo">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M3 17l5-6 4 4 5-7 4 5"/>
-          <path d="M3 21h18"/>
-        </svg>
         Fluxo de caixa
       </a>
-
-      <a class="item" routerLink="/relatorios" routerLinkActive="ativo">
+      
+      <!-- Depois so tirar o "desabilitado" e colocar o routerLink="/relatorios" routerLinkActive="ativo" no item abaixo, quando a rota estiver pronta -->
+      <a class="item desabilitado">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>
         </svg>
-        Relatórios
+        Relatórios (Em breve)
       </a>
 
       <p class="grupo">Sistema</p>
 
-      <a class="item" routerLink="/gestao-acessos" routerLinkActive="ativo">
+      <!-- Depois so tirar o "desabilitado" e colocar o routerLink="/gestao-acessos" routerLinkActive="ativo" no item abaixo, quando a rota estiver pronta -->
+      <a class="item desabilitado">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M9 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM3 20v-1a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v1"/>
           <path d="M16 6a3 3 0 0 1 0 6M18 15a4 4 0 0 1 3 4v1"/>
         </svg>
-        Gestão de acessos
+        Gestão de acessos <br> (Em breve)
       </a>
     </div>
 
