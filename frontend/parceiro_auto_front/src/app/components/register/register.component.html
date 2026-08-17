@@ -1,71 +1,83 @@
 <main class="register-page">
   <section class="register-card" aria-label="Formulário de register">
+    <div class="logo">
+      <img src="assets/parceiro-auto-logo-horizontal.svg" alt="Logo da empresa" />
+    </div>
     <h1>Cadastrar</h1>
     <p class="subtitle">
       Preencha os campos abaixo para criar sua conta.
     </p>
 
+    <div *ngIf="erro(); else semErro" class="aviso-erro">
+      <p>{{ erro() }}</p>
+      <button type="button" class="btn-fechar" (click)="limparErro()">✕</button>
+    </div>
+    <ng-template #semErro></ng-template>
+
     <form [formGroup]="form" (ngSubmit)="submit()">
       <div class="field-group">
-        <label for="email">E-mail</label>
-        <input id="email" type="email" placeholder="nome@empresa.com" formControlName="email" />
+        <label for="nome">Nome completo</label>
+        <input id="nome" type="text" placeholder="Seu nome" formControlName="nome" [disabled]="carregando()" />
       </div>
 
-      <div
-        class="error-message"
-        *ngIf="formSubmitted && emailControl?.invalid && emailControl?.hasError('required')"
-      >
+      <div class="error-message" *ngIf="formSubmitted() && nomeControl?.invalid && nomeControl?.hasError('required')">
+        Informe seu nome.
+      </div>
+
+      <div class="error-message" *ngIf="formSubmitted() && nomeControl?.invalid && nomeControl?.hasError('minlength')">
+        Seu nome deve ter no mínimo 3 caracteres.
+      </div>
+
+      <div class="field-group">
+        <label for="email">E-mail</label>
+        <input id="email" type="email" placeholder="nome@empresa.com" formControlName="email"
+          [disabled]="carregando()" />
+      </div>
+
+      <div class="error-message" *ngIf="formSubmitted() && emailControl?.invalid && emailControl?.hasError('required')">
         Informe seu e-mail.
       </div>
 
-      <div
-        class="error-message"
-        *ngIf="formSubmitted && emailControl?.invalid && emailControl?.hasError('email')"
-      >
+      <div class="error-message" *ngIf="formSubmitted() && emailControl?.invalid && emailControl?.hasError('email')">
         E-mail inválido. Use um formato válido.
       </div>
 
       <div class="field-group">
         <label for="password">Senha</label>
-        <input id="password" type="password" placeholder="Sua senha" formControlName="password" />
+        <input id="password" type="password" placeholder="Sua senha" formControlName="password"
+          [disabled]="carregando()" />
       </div>
 
-      <div
-        class="error-message"
-        *ngIf="formSubmitted && passwordControl?.invalid && passwordControl?.hasError('required')"
-      >
+      <div class="error-message"
+        *ngIf="formSubmitted() && passwordControl?.invalid && passwordControl?.hasError('required')">
         Informe sua senha.
       </div>
 
-      <div
-        class="error-message"
-        *ngIf="formSubmitted && passwordControl?.invalid && passwordControl?.hasError('minlength')"
-      >
+      <div class="error-message"
+        *ngIf="formSubmitted() && passwordControl?.invalid && passwordControl?.hasError('minlength')">
         Sua senha deve ter no mínimo 6 caracteres.
       </div>
 
       <div class="field-group">
         <label for="confirmPassword">Confirme sua senha</label>
-        <input id="confirmPassword" type="password" placeholder="Confirme sua senha" formControlName="confirmPassword" />
+        <input id="confirmPassword" type="password" placeholder="Confirme sua senha" formControlName="confirmPassword"
+          [disabled]="carregando()" />
       </div>
 
-      <div
-        class="error-message"
-        *ngIf="formSubmitted && confirmPasswordControl?.invalid && confirmPasswordControl?.hasError('required')"
-      >
+      <div class="error-message"
+        *ngIf="formSubmitted() && confirmPasswordControl?.invalid && confirmPasswordControl?.hasError('required')">
         Confirme sua senha.
       </div>
 
-      <div
-        class="error-message"
-        *ngIf="formSubmitted && form.hasError('passwordsNotMatch')"
-      >
+      <div class="error-message" *ngIf="formSubmitted() && form.hasError('passwordsNotMatch')">
         As senhas não coincidem.
       </div>
 
-      <button type="submit" class="register-btn">Cadastrar</button>
+      <button type="submit" class="register-btn" [disabled]="carregando()">
+        {{ carregando() ? 'Cadastrando...' : 'Cadastrar' }}
+      </button>
 
-      <button type="button" class="back-btn" routerLink="/login">
+      <button type="button" class="back-btn" routerLink="/login" [disabled]="carregando()">
         Voltar para o login
       </button>
     </form>

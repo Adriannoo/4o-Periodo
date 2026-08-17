@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
@@ -8,7 +8,8 @@ import {
   ReactiveFormsModule,
 } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { RouterLink, Router } from '@angular/router';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-register',
@@ -18,12 +19,19 @@ import { RouterLink } from '@angular/router';
   styleUrl: './register.component.scss',
 })
 export class RegisterComponent {
-  form: FormGroup;
-  formSubmitted = false;
+  private authService = inject(AuthService);
+  private router = inject(Router);
+  private fb = inject(FormBuilder);
 
-  constructor(private fb: FormBuilder) {
+  form: FormGroup;
+  formSubmitted = signal(false);
+  carregando = signal(false);
+  erro = signal<string | null>(null);
+
+  constructor() {
     this.form = this.fb.group(
       {
+        nome: ['', [Validators.required, Validators.minLength(3)]],
         email: ['', [Validators.required, Validators.email]],
         password: ['', [Validators.required, Validators.minLength(6)]],
         confirmPassword: ['', [Validators.required]]
@@ -32,6 +40,10 @@ export class RegisterComponent {
         validators: this.passwordsMatch
       }
     );
+  }
+
+  get nomeControl() {
+    return this.form.get('nome');
   }
 
   get emailControl() {
@@ -58,13 +70,38 @@ export class RegisterComponent {
   }
 
   submit() {
-    this.formSubmitted = true;
+    this.erro.set(null);
+    this.formSubmitted.set(true);
 
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
     }
 
-    console.log('Cadastro válido', this.form.value);
+    this.carregando.set(true);
+
+    const { nome, email, password } = this.form.value;
+
+    this.authService.registrar({
+      nome,
+      email,
+      senha: password,
+      papel: 'usuario',
+      ativo: true,
+    }).subscribe({
+      next: () => {
+        this.carregando.set(false);
+        // Redireciona para dashboard (já logado)
+        this.router.navigate(['/dashboard']);
+      },
+      error: (err) => {
+        this.carregando.set(false);
+        this.erro.set(err.message);
+      },
+    });
+  }
+
+  limparErro(): void {
+    this.erro.set(null);
   }
 }
